@@ -11,9 +11,10 @@ namespace google_nlp
     {
         static void Main(string[] args)
         {
-            var home = Environment.GetEnvironmentVariable("HOME");
-            Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", $"{home}/gits/igor2/secrets/google-nlp-igorplaygocreds.json");
-            var fileToAnalyze = $"{home}/gits/igor2/750words/2018-12-04.md";
+            // Sharing credentials between Windows and Unix is a pain. Do it via C# for now.
+            var homeDirectory = Environment.GetEnvironmentVariable("HOME");
+            Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", $"{homeDirectory}/gits/igor2/secrets/google-nlp-igorplaygocreds.json");
+
             Console.WriteLine($"Running NLP on {fileToAnalyze}");
 
             // The text to analyze.
