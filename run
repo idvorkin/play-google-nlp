@@ -1,1 +1,5 @@
+# ~ doesn't get expanded properly, so explictly setting home dir.
+eval export GOOGLE_APPLICATION_CREDENTIALS='/$HOME/gits/igor2/secrets/google-nlp-igorplaygocreds.json'
 dotnet exec bin/Debug/netcoreapp2.2/google-nlp.dll
+
+
