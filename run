@@ -1,0 +1,1 @@
+dotnet exec bin/Debug/netcoreapp2.2/google-nlp.dll
