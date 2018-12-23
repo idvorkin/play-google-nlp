@@ -15,39 +15,40 @@ namespace google_nlp
             var homeDirectory = Environment.GetEnvironmentVariable("HOME");
             Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", $"{homeDirectory}/gits/igor2/secrets/google-nlp-igorplaygocreds.json");
 
+            var fileToAnalyze = $"{homeDirectory}/gits/igor2/750words/2018-12-04.md";
             Console.WriteLine($"Running NLP on {fileToAnalyze}");
 
+            var nlpClient = LanguageServiceClient.Create();
+
             // The text to analyze.
-            var client = LanguageServiceClient.Create();
-            Document document = (new Document()
+            Document textToAnalyze = (new Document()
             {
                 Type = Document.Types.Type.PlainText,
                 Content = File.ReadAllText(fileToAnalyze).ToLower(),
             });
-            var response = client.AnalyzeEntitySentiment(document);
 
-
-            // var entities = response.Entities.To
-            foreach (var e in response.Entities.ToList().OrderBy(e=>e.Salience))
+            var rEntities = nlpClient.AnalyzeEntitySentiment(textToAnalyze);
+            foreach (var entity in rEntities.Entities.ToList().OrderBy(e => e.Salience))
             {
-                Console.WriteLine($"{e.Name} I:{e.Salience} M:{e.Sentiment.Magnitude} S:{e.Sentiment.Score} T:{e.Type}");
+                Console.WriteLine($"{entity.Name} I:{entity.Salience} M:{entity.Sentiment.Magnitude} S:{entity.Sentiment.Score} T:{entity.Type}");
             }
-            var r = client.ClassifyText(document);
-            foreach (var category in r.Categories.OrderBy(_=>_.Confidence))
+            var rClassify = nlpClient.ClassifyText(textToAnalyze);
+            foreach (var category in rClassify.Categories.OrderBy(_ => _.Confidence))
             {
                 Console.WriteLine($"{category.Name} C:{category.Confidence}");
             }
-            var s = client.AnalyzeSentiment(document);
-            // 
-            var interestingSentances = s.Sentences.
+
+            var rSentiment = nlpClient.AnalyzeSentiment(textToAnalyze);
+            var interestingSentances = rSentiment.Sentences.
                     Where(_ => !_.Text.Content.StartsWith("#")). // Remove markdown headers.
                     Where(_ => _.Sentiment.Magnitude != 0). // Remove things that don't have magnitude.
                     OrderBy(_ => _.Sentiment.Magnitude);
+
             foreach (var sentiment in interestingSentances)
             {
                 Console.WriteLine($"M:{sentiment.Sentiment.Magnitude} S:{sentiment.Sentiment.Score}: {sentiment.Text.Content}");
             }
-            Console.WriteLine($"Overall M:{s.DocumentSentiment.Magnitude} S:{s.DocumentSentiment.Score}");
+            Console.WriteLine($"Overall M:{rSentiment.DocumentSentiment.Magnitude} S:{rSentiment.DocumentSentiment.Score}");
         }
     }
 
