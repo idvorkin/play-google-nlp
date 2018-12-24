@@ -23,6 +23,14 @@ class Options
 
 namespace google_nlp
 {
+    static class Extensions
+    {
+        public static int ToPcnt(this float d)
+        {
+            return (int)(d * 100);
+        }
+    }
+
     class Program
     {
         // Sharing credentials between Windows and Unix is a pain. Do it via C# for now.
@@ -70,6 +78,7 @@ namespace google_nlp
             //var _assistant = new AssistantService(iamAssistantTokenOptions, "<version-date>");
         }
 
+
         private void AnalyzeWithGoogle(string textToAnalyze)
         {
             Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", $"{homeDirectory}/gits/igor2/secrets/google-nlp-igorplaygocreds.json");
@@ -84,7 +93,7 @@ namespace google_nlp
             var rEntities = nlpClient.AnalyzeEntitySentiment(docToAnalyze);
             foreach (var entity in rEntities.Entities.ToList().OrderBy(e => e.Salience))
             {
-                Console.WriteLine($"{entity.Name} I:{entity.Salience} M:{entity.Sentiment.Magnitude} S:{entity.Sentiment.Score} T:{entity.Type}");
+                Console.WriteLine($"{entity.Name} I:{entity.Salience} M:{entity.Sentiment.Magnitude} S:{entity.Sentiment.Score.ToPcnt()} T:{entity.Type}");
             }
             var rClassify = nlpClient.ClassifyText(docToAnalyze);
             foreach (var category in rClassify.Categories.OrderBy(_ => _.Confidence))
@@ -96,13 +105,14 @@ namespace google_nlp
             var interestingSentances = rSentiment.Sentences.
                     Where(_ => !_.Text.Content.StartsWith("#")). // Remove markdown headers.
                     Where(_ => _.Sentiment.Magnitude != 0). // Remove things that don't have magnitude.
+                    Where(_ => _.Text.Content.Split().Length > 2). // Remove sentances less then length 3.
                     OrderBy(_ => _.Sentiment.Magnitude);
 
             foreach (var sentiment in interestingSentances)
             {
-                Console.WriteLine($"M:{sentiment.Sentiment.Magnitude} S:{sentiment.Sentiment.Score}: {sentiment.Text.Content}");
+                Console.WriteLine($"M:{sentiment.Sentiment.Magnitude} S:{sentiment.Sentiment.Score.ToPcnt()}: {sentiment.Text.Content}");
             }
-            Console.WriteLine($"Overall M:{rSentiment.DocumentSentiment.Magnitude} S:{rSentiment.DocumentSentiment.Score}");
+            Console.WriteLine($"Overall M:{rSentiment.DocumentSentiment.Magnitude} S:{rSentiment.DocumentSentiment.Score.ToPcnt()}");
         }
     }
 
