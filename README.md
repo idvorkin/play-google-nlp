@@ -1,9 +1,25 @@
 # play-google-nlp
-A place to store my Google NLP on C# experiments.
+A place to store my Google and Watson NLP experiments on C# experiments.
 
 This is part of a larger nlp [exploration](https://github.com/idvorkin/techdiary/blob/master/notes/sentiment_analysis.md)
 
 I'm feeling adventurous, and want to learn both Google NLP and dotnet core in WSL as well.
+
+
+
+#### Preprocessing
+
+Incoming data is noisy, ideally the NLP service can fix (or a seperate service can fix).  In the interm I'll do it.
+
+Completed:
+
+- Lower case
+
+TODO:
+
+-  Fix common typos
+-  Normalize Noun Synonyms for English e.g. (magic, magic trick, card trick)
+-  Normalize Noun Synonyms for Igor's Domain e.g. (Tori == Wife) [Although trick, as can be referring to Ammon's wif]
 
 
 #### Get credentials.
@@ -27,3 +43,7 @@ Sharing code between VS and WSL is a pain!!
 - Worked around by creating a seperate repo for the WSL side, and override files with symlinks to the windows side, this lets me edit in VS, and run from WSL, after I rebuild.
 - Setting credentials consistely in C# in both Windows/WSL is painful so I did the work in code.
 
+
+#### Watson ?
+
+Sorry, I named the repository poorly. I'll also be doing some watson experimentation here.
