@@ -15,6 +15,8 @@ class Options
     public string InputFile { get; set; }
     [Option('s', "stdin", Default = false, Required = false, HelpText = "Process Standard in.")]
     public bool StdIn { get; set; }
+    [Option('g', "GroupByEntity", Default = true, Required = false, HelpText = "GroupByEntity")]
+    public bool GroupByEntity { get; set; }
     public bool IsUseHardcodedFile()
     {
         return this.InputFile == Options.USE_HARDCODED_FILE;
@@ -47,19 +49,19 @@ namespace google_nlp
 
                   Console.WriteLine($"Running NLP on {fileToAnalyze}");
                   var textToAnalyze = File.ReadAllText(fileToAnalyze).ToLower();
-                  program.InstanceMain(textToAnalyze);
+                  program.InstanceMain(opts, textToAnalyze);
               }
               );
         }
 
 
-        void InstanceMain(string textToAnalyze)
+        void InstanceMain(Options opts, string textToAnalyze)
         {
-            AnalyzeWithGoogle(textToAnalyze);
-            AnalyzeWithWatson(textToAnalyze);
+            AnalyzeWithGoogle(opts, textToAnalyze);
+            AnalyzeWithWatson(opts, textToAnalyze);
         }
 
-        private void AnalyzeWithWatson(string textToAnalyze)
+        private void AnalyzeWithWatson( Options opts, string textToAnalyze)
         {
             var secrets = JObject.Parse(File.ReadAllText($"{homeDirectory}/gits/igor2/secretBox.json"));
             var key = secrets["IBMWatsonKey"];
@@ -79,7 +81,7 @@ namespace google_nlp
         }
 
 
-        private void AnalyzeWithGoogle(string textToAnalyze)
+        private void AnalyzeWithGoogle(Options opts, string textToAnalyze)
         {
             Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", $"{homeDirectory}/gits/igor2/secrets/google-nlp-igorplaygocreds.json");
             var nlpClient = LanguageServiceClient.Create();
@@ -91,9 +93,27 @@ namespace google_nlp
             });
 
             var rEntities = nlpClient.AnalyzeEntitySentiment(docToAnalyze);
-            foreach (var entity in rEntities.Entities.ToList().OrderBy(e => e.Salience))
+
+            if (opts.GroupByEntity)
             {
-                Console.WriteLine($"{entity.Name} I:{entity.Salience} M:{entity.Sentiment.Magnitude} S:{entity.Sentiment.Score.ToPcnt()} T:{entity.Type}");
+
+                var entityGroups = rEntities.Entities.GroupBy(g => g.Name);
+                foreach (var eg in entityGroups.OrderBy(eg=>eg.Count()))
+                {
+                    Console.WriteLine($"{eg.Key}, {eg.Count()}, {eg.First().Type}");
+                    foreach (var entity in eg.OrderBy(e => e.Salience))
+                    {
+                        Console.WriteLine($"  I:{entity.Salience} M:{entity.Sentiment.Magnitude} S:{entity.Sentiment.Score.ToPcnt()}");
+                    }
+
+                }
+            }
+            else
+            {
+                foreach (var entity in rEntities.Entities.ToList().OrderBy(e => e.Salience))
+                {
+                    Console.WriteLine($"{entity.Name} I:{entity.Salience} M:{entity.Sentiment.Magnitude} S:{entity.Sentiment.Score.ToPcnt()} T:{entity.Type}");
+                }
             }
             var rClassify = nlpClient.ClassifyText(docToAnalyze);
             foreach (var category in rClassify.Categories.OrderBy(_ => _.Confidence))
