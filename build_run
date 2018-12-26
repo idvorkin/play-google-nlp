@@ -1,4 +1,4 @@
 rm -rf bin
 rm -rf obj
 dotnet build
-./run
+./run $*
