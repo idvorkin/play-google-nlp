@@ -33,6 +33,14 @@ namespace google_nlp
         {
             return (int)(d * 100);
         }
+        public static int ToPcnt(this double? d)
+        {
+            if (d == null)
+            {
+                return 0;
+            }
+            return (int)(d * 100);
+        }
     }
 
     class Program
@@ -65,11 +73,10 @@ namespace google_nlp
 
         private void AnalyzeWithWatson(Options opts, string textToAnalyze)
         {
-            //var serviceURL = "";
             var secrets = JObject.Parse(File.ReadAllText($"{homeDirectory}/gits/igor2/secretBox.json"));
             var key = secrets["IBMWatsonKeyNLU"];
             if (key == null) throw new InvalidDataException("Missing Key");
-            Console.WriteLine($"{key}");
+            // Console.WriteLine($"{key}");
 
             var authenticator = new IamAuthenticator(apikey: $"{key}");
             var service = new NaturalLanguageUnderstandingService("2019-07-12", authenticator);
@@ -78,24 +85,39 @@ namespace google_nlp
             {
                 Keywords = new KeywordsOptions()
                 {
-                    Limit = 2,
+                    Limit = 100,
                     Sentiment = true,
                     Emotion = true
                 },
                 Entities = new EntitiesOptions()
                 {
                     Sentiment = true,
-                    Limit = 2
+                    Limit = 100
+                },
+                Sentiment = new SentimentOptions()
+                {
+                    Document = true
                 }
             };
 
-
             var result = service.Analyze(
                 features: features,
-                text: "IBM is an American multinational technology company headquartered in Armonk, New York, United States, with operations in over 170 countries."
+                text: textToAnalyze
                 );
 
+            var doc = result.Result;
             Console.WriteLine(result.Response);
+            foreach (var e in doc.Entities)
+            {
+                if (e.Type != "Person" || e.Confidence < 0.50)
+                {
+                    continue;
+                }
+                Console.WriteLine($"{e.Text} - R:{e.Relevance.ToPcnt()}, C:{e.Confidence.ToPcnt()}");
+                // Console.WriteLine(e.Sentiment.ToString());
+            }
+            Console.WriteLine($"Overall Sentiment:{doc.Sentiment.Document.Label} S:{doc.Sentiment.Document.Score.ToPcnt()}");
+
         }
 
 
