@@ -6,12 +6,14 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using CommandLine;
+using IBM.Watson.NaturalLanguageUnderstanding.v1.Model;
+using IBM.Cloud.SDK.Core.Authentication.Iam;
+using IBM.Watson.NaturalLanguageUnderstanding.v1;
 
-// using IBM.WatsonDeveloperCloud.NaturalLanguageUnderstanding.v1.Model;
 class Options
 {
     const string USE_HARDCODED_FILE = "USE_HARDCODED_FILE";
-    [Option('f', "file",  Default=USE_HARDCODED_FILE, Required = false, HelpText = "Input files to be processed.")]
+    [Option('f', "file", Default = USE_HARDCODED_FILE, Required = false, HelpText = "Input files to be processed.")]
     public string InputFile { get; set; }
     [Option('s', "stdin", Default = false, Required = false, HelpText = "Process Standard in.")]
     public bool StdIn { get; set; }
@@ -43,9 +45,9 @@ namespace google_nlp
             Parser.Default.ParseArguments<Options>(args)
               .WithParsed<Options>(opts =>
               {
-                 var fileToAnalyze = opts.IsUseHardcodedFile() ?
-                      $"{homeDirectory}/gits/igor2/750words/2018-12-04.md" :
-                      opts.InputFile;
+                  var fileToAnalyze = opts.IsUseHardcodedFile() ?
+                       $"{homeDirectory}/gits/igor2/750words_new_archive/2018-12-04.md" :
+                       opts.InputFile;
 
                   Console.WriteLine($"Running NLP on {fileToAnalyze}");
                   var textToAnalyze = File.ReadAllText(fileToAnalyze).ToLower();
@@ -57,27 +59,43 @@ namespace google_nlp
 
         void InstanceMain(Options opts, string textToAnalyze)
         {
-            AnalyzeWithGoogle(opts, textToAnalyze);
+            // AnalyzeWithGoogle(opts, textToAnalyze);
             AnalyzeWithWatson(opts, textToAnalyze);
         }
 
-        private void AnalyzeWithWatson( Options opts, string textToAnalyze)
+        private void AnalyzeWithWatson(Options opts, string textToAnalyze)
         {
+            //var serviceURL = "";
             var secrets = JObject.Parse(File.ReadAllText($"{homeDirectory}/gits/igor2/secretBox.json"));
-            var key = secrets["IBMWatsonKey"];
+            var key = secrets["IBMWatsonKeyNLU"];
             if (key == null) throw new InvalidDataException("Missing Key");
+            Console.WriteLine($"{key}");
 
-            // Can't import watson libraries - excited for when can do that.
-            /*
-            var iamAssistantTokenOptions = new TokenOptions()
+            var authenticator = new IamAuthenticator(apikey: $"{key}");
+            var service = new NaturalLanguageUnderstandingService("2019-07-12", authenticator);
+
+            var features = new Features()
             {
-                IamApiKey = "<iam-apikey>",
-                ServiceUrl = "<service-endpoint>"
+                Keywords = new KeywordsOptions()
+                {
+                    Limit = 2,
+                    Sentiment = true,
+                    Emotion = true
+                },
+                Entities = new EntitiesOptions()
+                {
+                    Sentiment = true,
+                    Limit = 2
+                }
             };
-            */
 
-            //var nluClient = new NaturalLanguageUnderstandingService();
-            //var _assistant = new AssistantService(iamAssistantTokenOptions, "<version-date>");
+
+            var result = service.Analyze(
+                features: features,
+                text: "IBM is an American multinational technology company headquartered in Armonk, New York, United States, with operations in over 170 countries."
+                );
+
+            Console.WriteLine(result.Response);
         }
 
 
@@ -98,7 +116,7 @@ namespace google_nlp
             {
 
                 var entityGroups = rEntities.Entities.GroupBy(g => g.Name);
-                foreach (var eg in entityGroups.OrderBy(eg=>eg.Count()))
+                foreach (var eg in entityGroups.OrderBy(eg => eg.Count()))
                 {
                     Console.WriteLine($"{eg.Key}, {eg.Count()}, {eg.First().Type}");
                     foreach (var entity in eg.OrderBy(e => e.Salience))
