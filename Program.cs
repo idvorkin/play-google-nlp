@@ -21,12 +21,12 @@ class Options
     {
         return this.InputFile == Options.USE_HARDCODED_FILE;
     }
-    public JObject Secrets() 
+    public JObject Secrets()
     {
         // TODO Make Singleton and Use a dictionary.
         return JObject.Parse(File.ReadAllText($"{HomeDirectory()}/gits/igor2/secretBox.json"));
     }
-    public string HomeDirectory() 
+    public string HomeDirectory()
     {
         return Environment.GetEnvironmentVariable("HOME");
     }
@@ -78,15 +78,11 @@ namespace NLP
 
         void InstanceMain(Options opts, string textToAnalyze)
         {
-            var w = new Watson();
+            var w = new Watson(opts);
             w.Analyze(opts, textToAnalyze);
 
             var g = new Google();
             // AnalyzeWithGoogle(opts, textToAnalyze);
         }
-
-
-
     }
-
 }

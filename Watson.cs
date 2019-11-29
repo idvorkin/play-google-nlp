@@ -9,16 +9,16 @@ namespace NLP
 {
     class Watson
     {
-        public void Analyze(Options opts, string textToAnalyze)
+        readonly NaturalLanguageUnderstandingService Service;
+        public Watson(Options opts)
         {
             var secrets = opts.Secrets();
             var key = secrets["IBMWatsonKeyNLU"];
             if (key == null) throw new InvalidDataException("Missing Key");
-            // Console.WriteLine($"{key}");
-
-            var authenticator = new IamAuthenticator(apikey: $"{key}");
-            var service = new NaturalLanguageUnderstandingService("2019-07-12", authenticator);
-
+            Service = new NaturalLanguageUnderstandingService("2019-07-12", new IamAuthenticator(apikey: $"{key}"));
+        }
+        public void Analyze(Options opts, string textToAnalyze)
+        {
             var features = new Features()
             {
                 Keywords = new KeywordsOptions()
@@ -44,10 +44,10 @@ namespace NLP
 
             };
 
-            var result = service.Analyze(
-                features: features,
-                text: textToAnalyze
-                );
+            var result = Service.Analyze(
+                        features: features,
+                        text: textToAnalyze
+                        );
 
             var doc = result.Result;
             if (opts.Verbose)
