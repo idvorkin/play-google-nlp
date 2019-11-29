@@ -4,18 +4,27 @@ using System.IO;
 using IBM.Watson.NaturalLanguageUnderstanding.v1.Model;
 using IBM.Cloud.SDK.Core.Authentication.Iam;
 using IBM.Watson.NaturalLanguageUnderstanding.v1;
+using IBM.Watson.PersonalityInsights.v3;
+using IBM.Watson.PersonalityInsights.v3.Model;
+using System.Collections.Generic;
 
 namespace NLP
 {
     class Watson
     {
-        readonly NaturalLanguageUnderstandingService Service;
+        readonly NaturalLanguageUnderstandingService NLUService;
+        readonly PersonalityInsightsService PersonalityService;
         public Watson(Options opts)
         {
             var secrets = opts.Secrets();
-            var key = secrets["IBMWatsonKeyNLU"];
-            if (key == null) throw new InvalidDataException("Missing Key");
-            Service = new NaturalLanguageUnderstandingService("2019-07-12", new IamAuthenticator(apikey: $"{key}"));
+
+            var keyNLU = secrets["IBMWatsonKeyNLU"];
+            if (keyNLU == null) throw new InvalidDataException("Missing NLU Key");
+            NLUService = new NaturalLanguageUnderstandingService("2019-07-12", new IamAuthenticator(apikey: $"{keyNLU}"));
+
+            var keyPersonality = secrets["IBMWatsonKeyPersonality"];
+            if (keyPersonality == null) throw new InvalidDataException("Missing Personality Key");
+            PersonalityService = new PersonalityInsightsService("2017-10-13", new IamAuthenticator(apikey: $"{keyPersonality}"));
         }
         public void Analyze(Options opts, string textToAnalyze)
         {
@@ -44,7 +53,7 @@ namespace NLP
 
             };
 
-            var result = Service.Analyze(
+            var result = NLUService.Analyze(
                         features: features,
                         text: textToAnalyze
                         );
@@ -65,6 +74,30 @@ namespace NLP
                 Console.WriteLine($"{e.Text.PadRight(25)} - R:{e.Relevance.ToPcnt()}, C:{e.Confidence.ToPcnt()}, S:{e.Sentiment.Score.ToPcnt()} E:{e.Emotion.Pretty()}");
                 // Console.WriteLine(e.Sentiment.ToString());
             }
+
+        }
+        public void AnalyzePersonality(Options option, string content)
+        {
+            // TODO Build from 
+            var personalityContents = new Content()
+            {
+                ContentItems = new List<ContentItem>{
+                    new ContentItem()
+                    {
+                        Content = content
+                    }
+
+                }
+            };
+
+            var result = PersonalityService.Profile(
+                content: personalityContents,
+                contentType: "application/json",
+                rawScores: true,
+                consumptionPreferences: true
+                );
+            Console.WriteLine(result.Response);
+
         }
     }
 

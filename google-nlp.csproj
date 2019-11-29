@@ -11,6 +11,7 @@
     <PackageReference Include="Google.Cloud.Language.V1" Version="1.1.0" />
     <PackageReference Include="IBM.Cloud.SDK.Core" Version="1.0.1" />
     <PackageReference Include="IBM.Watson.NaturalLanguageUnderstanding.v1" Version="*"/>
+    <PackageReference Include="IBM.Watson.PersonalityInsights.v3" Version="*"/>
   </ItemGroup>
 
 </Project>
