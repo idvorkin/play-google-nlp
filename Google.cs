@@ -6,7 +6,7 @@ namespace NLP
 {
     class Google
     {
-        private void AnalyzeWithGoogle(Options opts, string textToAnalyze)
+        public void Analyze(Options opts, string textToAnalyze)
         {
             Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", $"{opts.HomeDirectory()}/gits/igor2/secrets/google-nlp-igorplaygocreds.json");
             var nlpClient = LanguageServiceClient.Create();

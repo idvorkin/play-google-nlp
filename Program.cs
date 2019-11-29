@@ -15,6 +15,8 @@ class Options
     public bool StdIn { get; set; }
     [Option('g', "GroupByEntity", Default = true, Required = false, HelpText = "GroupByEntity")]
     public bool GroupByEntity { get; set; }
+    [Option('w', "Watson", Default = true, Required = false, HelpText = "Use Watson")]
+    public bool Watson { get; set; }
     [Option('p', "Personality", Default = false, Required = false, HelpText = "See Personality")]
     public bool Personality { get; set; }
     [Option('v', "Verbose", Default = false, Required = false, HelpText = "Verbose Output")]
@@ -81,16 +83,22 @@ namespace NLP
         void InstanceMain(Options opts, string textToAnalyze)
         {
             var w = new Watson(opts);
-            if (opts.Personality)
+            if (opts.Watson)
             {
-                w.AnalyzePersonality(opts, textToAnalyze);
+                if (opts.Personality)
+                {
+                    w.AnalyzePersonality(opts, textToAnalyze);
+                }
+                else
+                {
+                    w.Analyze(opts, textToAnalyze);
+                }
             }
             else
             {
-                w.Analyze(opts, textToAnalyze);
+                var g = new Google();
+                g.Analyze(opts, textToAnalyze);
             }
-            var g = new Google();
-            // AnalyzeWithGoogle(opts, textToAnalyze);
         }
     }
 }
