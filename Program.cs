@@ -65,7 +65,7 @@ namespace google_nlp
                        opts.InputFile;
 
                   Console.WriteLine($"Running NLP on {fileToAnalyze}");
-                  var textToAnalyze = File.ReadAllText(fileToAnalyze).ToLower();
+                  var textToAnalyze = File.ReadAllText(fileToAnalyze);
                   program.InstanceMain(opts, textToAnalyze);
               }
               );
