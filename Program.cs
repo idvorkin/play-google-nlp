@@ -19,6 +19,8 @@ class Options
     public bool StdIn { get; set; }
     [Option('g', "GroupByEntity", Default = true, Required = false, HelpText = "GroupByEntity")]
     public bool GroupByEntity { get; set; }
+    [Option('v', "Verbose", Default = false, Required = false, HelpText = "Verbose Output")]
+    public bool Verbose { get; set; }
     public bool IsUseHardcodedFile()
     {
         return this.InputFile == Options.USE_HARDCODED_FILE;
@@ -29,17 +31,22 @@ namespace google_nlp
 {
     static class Extensions
     {
-        public static int ToPcnt(this float d)
+        public static string ToPcnt(this float d)
         {
-            return (int)(d * 100);
+            return $"{(int)(d * 100):D2}";
         }
-        public static int ToPcnt(this double? d)
+        public static string ToPcnt(this double? d)
         {
             if (d == null)
             {
-                return 0;
+                return "00";
             }
-            return (int)(d * 100);
+            return ((float)d).ToPcnt();
+        }
+
+        public static string Pretty(this EmotionScores es)
+        {
+            return $"[Joy:{es.Joy.ToPcnt()}, Sad:{es.Sadness.ToPcnt()}, Mad:{es.Anger.ToPcnt()},Fear:{es.Fear.ToPcnt()}, Disgust:{es.Disgust.ToPcnt()}]";
         }
     }
 
@@ -85,19 +92,25 @@ namespace google_nlp
             {
                 Keywords = new KeywordsOptions()
                 {
-                    Limit = 100,
+                    Limit = 10,
                     Sentiment = true,
                     Emotion = true
                 },
                 Entities = new EntitiesOptions()
                 {
                     Sentiment = true,
+                    Emotion = true,
                     Limit = 100
                 },
                 Sentiment = new SentimentOptions()
                 {
                     Document = true
+                },
+                Emotion = new EmotionOptions()
+                {
+                    Document = true
                 }
+
             };
 
             var result = service.Analyze(
@@ -106,20 +119,22 @@ namespace google_nlp
                 );
 
             var doc = result.Result;
-            Console.WriteLine(result.Response);
+            if (opts.Verbose)
+            {
+                Console.WriteLine(result.Response);
+            }
+
+            Console.WriteLine($"Overall {doc.Sentiment.Document.Label}:{doc.Sentiment.Document.Score.ToPcnt()} E:{doc.Emotion.Document.Emotion.Pretty()}");
             foreach (var e in doc.Entities)
             {
                 if (e.Type != "Person" || e.Confidence < 0.50)
                 {
                     continue;
                 }
-                Console.WriteLine($"{e.Text} - R:{e.Relevance.ToPcnt()}, C:{e.Confidence.ToPcnt()}");
+                Console.WriteLine($"{e.Text.PadRight(25)} - R:{e.Relevance.ToPcnt()}, C:{e.Confidence.ToPcnt()}, S:{e.Sentiment.Score.ToPcnt()} E:{e.Emotion.Pretty()}");
                 // Console.WriteLine(e.Sentiment.ToString());
             }
-            Console.WriteLine($"Overall Sentiment:{doc.Sentiment.Document.Label} S:{doc.Sentiment.Document.Score.ToPcnt()}");
-
         }
-
 
         private void AnalyzeWithGoogle(Options opts, string textToAnalyze)
         {
