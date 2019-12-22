@@ -17,6 +17,8 @@ class Options
     public bool GroupByEntity { get; set; }
     [Option('w', "Watson", Default = true, Required = false, HelpText = "Use Watson")]
     public bool Watson { get; set; }
+    [Option('a', "Google", Default = false, Required = false, HelpText = "Use Google")]
+    public bool Google { get; set; }
     [Option('p', "Personality", Default = false, Required = false, HelpText = "See Personality")]
     public bool Personality { get; set; }
     [Option('v', "Verbose", Default = false, Required = false, HelpText = "Verbose Output")]
@@ -69,7 +71,7 @@ namespace NLP
               .WithParsed<Options>(opts =>
               {
                   var fileToAnalyze = opts.IsUseHardcodedFile() ?
-                       $"{homeDirectory}/gits/igor2/750words_new_archive/2018-12-04.md" :
+                       $"{homeDirectory}/gits/igor2/750words_new_archive/2019-11-01.md" :
                        opts.InputFile;
 
                   Console.WriteLine($"Running NLP on {fileToAnalyze}");

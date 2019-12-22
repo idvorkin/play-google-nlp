@@ -7,6 +7,7 @@ using IBM.Watson.NaturalLanguageUnderstanding.v1;
 using IBM.Watson.PersonalityInsights.v3;
 using IBM.Watson.PersonalityInsights.v3.Model;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace NLP
 {
@@ -65,16 +66,11 @@ namespace NLP
             }
 
             Console.WriteLine($"Overall {doc.Sentiment.Document.Label}:{doc.Sentiment.Document.Score.ToPcnt()} E:{doc.Emotion.Document.Emotion.Pretty()}");
-            foreach (var e in doc.Entities)
-            {
-                if (e.Type != "Person" || e.Confidence < 0.50)
-                {
-                    continue;
-                }
-                Console.WriteLine($"{e.Text.PadRight(25)} - R:{e.Relevance.ToPcnt()}, C:{e.Confidence.ToPcnt()}, S:{e.Sentiment.Score.ToPcnt()} E:{e.Emotion.Pretty()}");
-                // Console.WriteLine(e.Sentiment.ToString());
-            }
-
+            // var interestingEntities = doc.Entities.Where(e => e.Type == "Person" && e.Confidence > 0.5);
+            var interestingEntities = doc.Entities.Where(e => e.Confidence > 0.5 && !"Quantity Hashtag".Split().Contains(e.Type));
+            interestingEntities.ToList().ForEach(e =>
+            Console.WriteLine($"{e.Text.PadRight(25)} - R:{e.Relevance.ToPcnt()}, C:{e.Confidence.ToPcnt()}, S:{e.Sentiment.Score.ToPcnt()} E:{e.Emotion.Pretty()}")
+            );
         }
         public void AnalyzePersonality(Options option, string content)
         {
@@ -96,8 +92,24 @@ namespace NLP
                 rawScores: true,
                 consumptionPreferences: true
                 );
-            Console.WriteLine(result.Response);
+            if (option.Verbose)
+            {
+                Console.WriteLine(result.Response);
+            }
+            result.Result.ConsumptionPreferences?.SelectMany(cp => cp.ConsumptionPreferences).ToList()
+            .ForEach(cp => Console.WriteLine($"CP:{cp.Name}: {cp.Score.ToPcnt()}"));
 
+            result.Result.Behavior?.ForEach(b =>
+            Console.WriteLine($"B:{b.Name}:{b.Percentage.ToPcnt()}")
+            );
+
+            result.Result.Personality.ForEach(p =>
+            Console.WriteLine($"P:{p.Name}:{p.Percentile.ToPcnt()} Significant:{p.Significant}")
+            );
+
+
+
+            Console.WriteLine($"Analyzed Words: {result.Result.WordCount}");
         }
     }
 
