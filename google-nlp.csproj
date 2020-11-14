@@ -2,14 +2,14 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>google_nlp</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.3.0" />
-    <PackageReference Include="Google.Cloud.Language.V1" Version="1.1.0" />
-    <PackageReference Include="IBM.Cloud.SDK.Core" Version="1.0.1" />
+    <PackageReference Include="Google.Cloud.Language.V1" Version="*" />
+    <PackageReference Include="IBM.Cloud.SDK.Core" Version="*" />
     <PackageReference Include="IBM.Watson.NaturalLanguageUnderstanding.v1" Version="*"/>
     <PackageReference Include="IBM.Watson.PersonalityInsights.v3" Version="*"/>
   </ItemGroup>

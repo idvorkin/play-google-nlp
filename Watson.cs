@@ -21,11 +21,11 @@ namespace NLP
 
             var keyNLU = secrets["IBMWatsonKeyNLU"];
             if (keyNLU == null) throw new InvalidDataException("Missing NLU Key");
-            NLUService = new NaturalLanguageUnderstandingService("2019-07-12", new IamAuthenticator(apikey: $"{keyNLU}"));
+            NLUService = new NaturalLanguageUnderstandingService("2020-08-01", new IamAuthenticator(apikey: $"{keyNLU}"));
 
             var keyPersonality = secrets["IBMWatsonKeyPersonality"];
             if (keyPersonality == null) throw new InvalidDataException("Missing Personality Key");
-            PersonalityService = new PersonalityInsightsService("2017-10-13", new IamAuthenticator(apikey: $"{keyPersonality}"));
+            PersonalityService = new PersonalityInsightsService("2020-08-01", new IamAuthenticator(apikey: $"{keyPersonality}"));
         }
         public void Analyze(Options opts, string textToAnalyze)
         {
@@ -68,13 +68,13 @@ namespace NLP
             Console.WriteLine($"Overall {doc.Sentiment.Document.Label}:{doc.Sentiment.Document.Score.ToPcnt()} E:{doc.Emotion.Document.Emotion.Pretty()}");
             // var interestingEntities = doc.Entities.Where(e => e.Type == "Person" && e.Confidence > 0.5);
             var interestingEntities = doc.Entities.Where(e => e.Confidence > 0.5 && !"Quantity Hashtag".Split().Contains(e.Type));
-            interestingEntities.ToList().ForEach(e =>
+            interestingEntities.Take(10).ToList().ForEach(e =>
             Console.WriteLine($"{e.Text.PadRight(25)} - R:{e.Relevance.ToPcnt()}, C:{e.Confidence.ToPcnt()}, S:{e.Sentiment.Score.ToPcnt()} E:{e.Emotion.Pretty()}")
             );
         }
         public void AnalyzePersonality(Options option, string content)
         {
-            // TODO Build from 
+            // TODO Build from
             var personalityContents = new Content()
             {
                 ContentItems = new List<ContentItem>{

@@ -1,6 +1,6 @@
 # ~ doesn't get expanded properly, so explictly setting home dir.
 eval export GOOGLE_APPLICATION_CREDENTIALS='/$HOME/gits/igor2/secrets/google-nlp-igorplaygocreds.json'
 # dotnet run is super slow, so explictly calling exec. However, don't forget to build before executing
-dotnet exec bin/Debug/netcoreapp2.1/google-nlp.dll $*
+dotnet exec bin/Debug/netcoreapp3.1/google-nlp.dll $*
 
 

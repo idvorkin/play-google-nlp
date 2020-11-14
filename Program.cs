@@ -70,12 +70,24 @@ namespace NLP
             Parser.Default.ParseArguments<Options>(args)
               .WithParsed<Options>(opts =>
               {
-                  var fileToAnalyze = opts.IsUseHardcodedFile() ?
-                       $"{homeDirectory}/gits/igor2/750words_new_archive/2019-11-01.md" :
-                       opts.InputFile;
 
-                  Console.WriteLine($"Running NLP on {fileToAnalyze}");
-                  var textToAnalyze = File.ReadAllText(fileToAnalyze);
+                  var textToAnalyze  = "SHOULD_BE_REPLACED";
+
+                  if (opts.StdIn)
+                  {
+                    textToAnalyze = Console.In.ReadToEnd();
+                  }
+                  else
+                  {
+                      var fileToAnalyze = opts.IsUseHardcodedFile() ?
+                           $"{homeDirectory}/gits/igor2/750words_new_archive/2020-09-14.md" :
+                           opts.InputFile;
+
+                      Console.WriteLine($"Running NLP on {fileToAnalyze}");
+                      textToAnalyze = File.ReadAllText(fileToAnalyze);
+                  }
+
+
                   program.InstanceMain(opts, textToAnalyze);
               }
               );
